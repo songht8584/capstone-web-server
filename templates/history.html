@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>내 검사 기록</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .history-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .count-badge {
+            background-color: #e0f7fa;
+            color: #006064;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin-right: 15px;
+            border: 1px solid #b2ebf2;
+        }
+
+        .history-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            background-color: #fff;
+            align-items: center;
+        }
+        .history-img img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .history-info { flex: 1; }
+        
+        /* 결과 텍스트 색상 */
+        .status-pass { color: green; font-weight: bold; }
+        .status-fail { color: red; font-weight: bold; }
+        .status-invalid { color: orange; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        th, td { border: 1px solid #eee; padding: 5px; text-align: center; }
+        th { background-color: #f9f9f9; }
+
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);
+        }
+        .modal-content {
+            margin: auto; display: block; width: 80%; max-width: 700px;
+            margin-top: 50px;
+        }
+        .close {
+            position: absolute; top: 15px; right: 35px; color: #f1f1f1;
+            font-size: 40px; font-weight: bold; cursor: pointer;
+        }
+        
+        .pagination { margin-top: 30px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 15px; }
+        .page-btn { background-color: #f1f1f1; border: 1px solid #ddd; color: #333; padding: 8px 16px; text-decoration: none; border-radius: 5px; }
+        .page-btn:hover { background-color: #ddd; }
+        .page-info { font-weight: bold; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="history-container">
+        
+        <div class="history-header">
+            <h2 style="margin: 0;">내 이전 검사 기록</h2>
+            <div>
+                <span class="count-badge">총 {{ total_count }}건 진행</span>
+                <a href="/" style="text-decoration: none; color: #555; font-weight: bold;">메인으로</a>
+            </div>
+        </div>
+        
+        <hr style="margin-top: 20px; margin-bottom: 20px;">
+
+        {% if history_list %}
+            {% for item in history_list %}
+            
+            {% set status = namespace(body='X', cap='X', label='X') %}
+            {% if item.details %}
+                {% for det in item.details %}
+                    {% if det.class == 'bottle' %}{% set status.body = 'O' %}{% endif %}
+                    {% if det.class == 'cap' %}{% set status.cap = 'O' %}{% endif %}
+                    {% if det.class == 'label' %}{% set status.label = 'O' %}{% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <div class="history-card">
+                <div class="history-img">
+                    <img src="{{ url_for('static', filename='results/' + item.res_filename) }}" 
+                         alt="결과 이미지"
+                         onclick="openModal(this.src)">
+                    <p style="text-align: center; font-size: 0.8em; color: #666;">(사진을 클릭하여 확대)</p>
+                </div>
+
+                <div class="history-info">
+                    <p><strong>일시:</strong> {{ item.upload_date }}</p>
+                    <p>
+                        <strong>결과:</strong> 
+                        {% if item.result_status == 'pass' %} <span class="status-pass">(+{{ item.score }}P)</span>
+                        {% elif item.result_status == 'fail' %} <span class="status-fail">(+{{ item.score }}P)</span>
+                        {% else %} <span class="status-invalid">인식 실패</span>
+                        {% endif %}
+                    </p>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>검사 항목</th>
+                                <th>탐지 여부</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>페트병 몸체</td>
+                                <td class="status-body-o">{{ status.body }}</td>
+                            </tr>
+                            <tr>
+                                <td>뚜껑 (Cap)</td>
+                                <td class="{% if status.cap == 'O' %}status-o{% else %}status-x{% endif %}">
+                                    {{ status.cap }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>라벨 (Label)</td>
+                                <td class="{% if status.label == 'O' %}status-o{% else %}status-x{% endif %}">
+                                    {{ status.label }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="{{ url_for('history', page=page-1) }}" class="page-btn">← 이전</a>
+                {% endif %}
+
+                <span class="page-info">{{ page }} / {{ total_pages }} 페이지</span>
+
+                {% if page < total_pages %}
+                    <a href="{{ url_for('history', page=page+1) }}" class="page-btn">다음 →</a>
+                {% endif %}
+            </div>
+
+        {% else %}
+            <div style="text-align: center; padding: 50px; color: #777;">
+                <p>아직 진행된 검사 기록이 없습니다.</p>
+                <a href="/inspection" style="color: #00b8a9; font-weight: bold;">첫 검사 하러 가기 &gt;</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div id="imgModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="modalImg">
+    </div>
+
+    <script>
+        function openModal(src) {
+            document.getElementById('imgModal').style.display = "block";
+            document.getElementById('modalImg').src = src;
+        }
+        function closeModal() {
+            document.getElementById('imgModal').style.display = "none";
+        }
+    </script>
+</body>
+</html>

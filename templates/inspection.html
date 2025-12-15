@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>페트병 분리수거 검사</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .example-box { display: flex; justify-content: center; gap: 20px; margin: 20px 0; flex-wrap: wrap; }
+        .ex-item { border: 1px solid #ddd; padding: 10px; border-radius: 8px; text-align: center; background-color: #fff; width: 45%; }
+        .ex-item img { max-width: 100%; height: 200px; object-fit: cover; border-radius: 4px; }
+        .ex-good { border-top: 5px solid #2ecc71; }
+        .ex-bad { border-top: 5px solid #e74c3c; }
+        
+        /* 아코디언 스타일 */
+        .accordion { background-color: #f1f1f1; color: #444; cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left; outline: none; font-size: 16px; font-weight: bold; border-radius: 8px; margin-top: 30px; transition: 0.4s; }
+        .active, .accordion:hover { background-color: #ddd; }
+        .accordion:after { content: '\002B'; color: #777; font-weight: bold; float: right; margin-left: 5px; }
+        .active:after { content: "\2212"; }
+        .panel { padding: 0 18px; background-color: white; max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; border: 1px solid #ddd; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+        
+        /* 이미지 비교 스타일 */
+        .image-compare-container { display: flex; justify-content: flex-start; align-items: flex-start; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .image-compare-container img { border: 1px solid #ddd; padding: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); max-width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p>분석 중입니다...</p>
+    </div>
+
+    <div id="upload-container" style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <h2>페트병 분리수거 검사</h2>
+
+        <div class="example-box">
+            <div class="ex-item ex-good">
+                <h4 style="color: #2ecc71; margin: 5px 0;">✅ 좋은 예시</h4>
+                <img src="{{ url_for('static', filename='good.examples.jpg') }}" alt="좋은 예시">
+                <p style="font-size: 0.9em;">라벨/뚜껑 제거, 압축된 상태</p>
+            </div>
+            <div class="ex-item ex-bad">
+                <h4 style="color: #e74c3c; margin: 5px 0;">❌ 나쁜 예시</h4>
+                <img src="{{ url_for('static', filename='bad_examples.jpg') }}" alt="나쁜 예시">
+                <p style="font-size: 0.9em;">라벨/뚜껑 제거 X, 내용물이 남아있음</p>
+            </div>
+        </div>
+
+        <p>분리수거 상태를 검사할 페트병 사진을 업로드하세요.</p>
+        
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept="image/*" required>
+            <button type="submit" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">검사 시작</button>
+        </form>
+        
+        <br><br>
+        
+        <button class="accordion">올바른 페트병 분리수거 방법 보기(참고)</button>
+        <div class="panel">
+            <div style="padding: 20px 0;">
+                <h4>1단계: 내용물을 비우고 깨끗이 헹궈주세요.</h4>
+                <div class="image-compare-container">
+                    <div style="text-align: center;">
+                        <span style="background-color: #ffcccc; color: #d63031; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em;">세척 전</span><br><br>
+                        <img src="{{ url_for('static', filename='step1.jpg') }}" alt="1단계 전" width="200">
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="background-color: #dff9fb; color: #22a6b3; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em;">세척 후</span><br><br>
+                        <img src="{{ url_for('static', filename='step2.jpg') }}" alt="1단계 후" width="200">
+                    </div>
+                </div>
+                <p>용기 안의 음료를 완전히 비우고, 물로 깨끗하게 헹궈 잔여물을 제거하는 것이 가장 중요합니다.</p>
+                <h4>2단계: 뚜껑과 고리를 제거해주세요.</h4>
+                <img src="{{ url_for('static', filename='step3.jpg') }}" alt="2단계" width="300">
+                <h4>3단계: 붙어 있는 라벨(상표)을 떼어내 주세요.</h4>
+                <img src="{{ url_for('static', filename='step4.jpg') }}" alt="3단계" width="300">
+                <h4>4단계: 몸체를 압축하여 부피를 줄여 배출합니다.</h4>
+                <img src="{{ url_for('static', filename='step5.jpg') }}" alt="4단계" width="300">
+            </div>
+        </div>
+
+        <br><br>
+
+        <div style="text-align: center; margin-bottom: 20px;">
+            <a href="/" style="background-color: #34495e; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-size: 1.1em;">메인 화면으로 돌아가기</a>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="/logout" style="color: #666;">로그아웃</a>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        form.addEventListener('submit', function() { document.getElementById('loading-overlay').style.display = 'flex'; });
+        window.addEventListener('load', function() { if (performance.navigation.type === 1) { window.location.href = '/logout'; } });
+        var acc = document.getElementsByClassName("accordion");
+        for (var i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight) panel.style.maxHeight = null; else panel.style.maxHeight = panel.scrollHeight + "px";
+            });
+        }
+    </script>
+</body>
+</html>

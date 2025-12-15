@@ -1,0 +1,165 @@
+/* --- 로그인 페이지 전용 스타일 --- */
+
+/* 로딩 오버레이 (화면 전체를 덮는 반투명 검은색 배경) */
+#loading-overlay {
+    /* (↓↓↓) 여기가 핵심입니다! 반드시 'none'이어야 처음에 안 보입니다. */
+    display: none; 
+
+    /* 화면 전체를 덮도록 설정 */
+    position: fixed; 
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    
+    /* 배경색 (반투명 검정) */
+    background-color: rgba(0, 0, 0, 0.7);
+    
+    /* 내용물 중앙 정렬 (나중에 자바스크립트가 이걸 켭니다) */
+    flex-direction: column; 
+    justify-content: center;
+    align-items: center;
+    
+    /* 맨 위에 표시 */
+    z-index: 9999;
+    
+    /* 텍스트 색상 */
+    color: white;
+    font-size: 1.2em;
+}
+
+/* 전체 배경색 */
+.login-body {
+    background-color: #00b8a9; /* 청록색 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+.login-container {
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+}
+
+.login-container img {
+    max-width: 300px; 
+    height: auto;     
+    display: block;   
+    margin: 0 auto 20px auto; 
+}
+
+.login-title {
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+.title-underline {
+    width: 50px;
+    height: 3px;
+    background-color: rgba(255, 255, 255, 0.5);
+    margin: 0 auto 40px auto;
+    border-radius: 2px;
+}
+
+/* 입력 필드 그룹 (흰색 배경) */
+.input-group {
+    background-color: white;
+    border-radius: 30px;
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* 실제 입력창 스타일 (수정됨: 가운데 정렬) */
+.input-group input {
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #333;
+    width: 100%;
+    background: transparent;
+    text-align: center; /* 아이콘이 없으므로 글자를 가운데로 정렬 */
+}
+
+.input-group input::placeholder {
+    color: #ccc;
+}
+
+/* 로그인 버튼 스타일 */
+.login-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 30px;
+    background-color: white;
+    color: #00b8a9;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.1s ease-in-out;
+    margin-bottom: 25px;
+}
+
+.login-btn:active {
+    transform: scale(0.98);
+}
+
+.forgot-password {
+    color: #2c3e50;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.forgot-password:hover {
+    text-decoration: underline;
+}
+
+/* 플래시 메시지 */
+.flash-message {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: white;
+}
+.flash-message.danger { background-color: rgba(231, 76, 60, 0.8); }
+.flash-message.success { background-color: rgba(46, 204, 113, 0.8); }
+
+/* 페이지네이션 스타일 */
+.pagination {
+    margin-top: 30px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.page-btn {
+    background-color: #f1f1f1;
+    border: 1px solid #ddd;
+    color: #333;
+    padding: 8px 16px;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.page-btn:hover {
+    background-color: #ddd;
+}
+
+.page-info {
+    font-weight: bold;
+    color: #555;
+}

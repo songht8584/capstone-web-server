@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>리워드 상점</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .shop-container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 40px 20px; 
+            text-align: center; 
+        }
+        .shop-item { 
+            border: 1px solid #ddd; 
+            padding: 20px; 
+            margin: 15px; 
+            display: inline-block; 
+            width: 220px; 
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            vertical-align: top;
+        }
+        .shop-item img { 
+            max-width: 100%; 
+            height: auto; 
+            object-fit: cover;
+            border-radius: 5px; 
+            margin-bottom: 15px
+        }
+        .shop-item h3 { margin-top: 0; color: #333; }
+        .shop-item p { font-size: 1.2em; font-weight: bold; color: #555; }
+        
+        .shop-btn {
+            background-color: #00b8a9; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px;
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-top: 10px;
+            width: 100%;
+            font-size: 1em;
+        }
+        .shop-btn:hover { background-color: #008f83; }
+    </style>
+</head>
+<body>
+    <div class="shop-container">
+        <h2>리워드 상점</h2>
+        
+        <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+            <p style="margin: 0; font-size: 1.2em;">
+                현재 보유 포인트: <strong style="color: #00b8a9; font-size: 1.5em;">{{ points }} P</strong>
+            </p>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 30px;">
+        
+        <div class="shop-item">
+            <img src="{{ url_for('static', filename='coffee.jpg') }}">
+            <div style="font-size: 50px; margin-bottom: 10px;"></div>
+            <h3>아메리카노 기프티콘</h3>
+            <p>3,000 P</p>
+            <button class="shop-btn" onclick="checkPoint(3000)">교환하기</button>
+        </div>
+        
+        <div class="shop-item">
+            <img src="{{ url_for('static', filename='convinece.jpg') }}">
+            <div style="font-size: 50px; margin-bottom: 10px;"></div>
+            <h3>편의점 상품권 기프티콘</h3>
+            <p>5,000 P</p>
+            <button class="shop-btn" onclick="checkPoint(5000)">교환하기</button>
+        </div>
+
+        <div class="shop-item">
+            <img src="{{ url_for('static', filename='chicken.jpg') }}">
+            <div style="font-size: 50px; margin-bottom: 10px;"></div>
+            <h3>치킨 기프티콘</h3>
+            <p>20,000 P</p>
+            <button class="shop-btn" onclick="checkPoint(20000)">교환하기</button>
+        </div>
+
+        <br><br><br>
+        <a href="/" style="background-color: #34495e; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-size: 1.1em;">메인으로 돌아가기</a>
+    </div>
+
+    <script>
+        const currentPoints = {{ points }};
+
+        function checkPoint(price) {
+            if (currentPoints >= price) {
+                if(confirm("정말 교환하시겠습니까? (현재는 데모 기능입니다)")) {
+                    alert("교환 신청이 완료되었습니다!");
+                }
+            } else {
+                alert("포인트가 부족합니다! 열심히 분리수거를 해주세요.");
+            }
+        }
+    </script>
+</body>
+</html>

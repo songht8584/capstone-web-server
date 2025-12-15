@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>검사 결과</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .image-compare-container { display: flex; justify-content: flex-start; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .image-compare-container img { border: 1px solid #ddd; padding: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); max-width: 100%; }
+        
+        /* 상세 정보 테이블 (O/X용) */
+        .info-table { width: 100%; max-width: 500px; border-collapse: collapse; margin: 20px 0; font-size: 1.1em; }
+        .info-table th, .info-table td { border: 1px solid #ccc; padding: 12px; text-align: center; }
+        .info-table th { background-color: #eee; }
+        
+        /* O/X 색상 강조 */
+        .status-o { color: red; font-weight: bold; } /* 탐지됨 (보통 나쁜 것) */
+        .status-x { color: green; font-weight: bold; opacity: 0.5; } /* 탐지 안됨 (좋은 것) */
+        .status-body-o { color: green; font-weight: bold; } /* 몸체는 탐지되어야 좋음 */
+
+        .analyzed-image { max-width: 100%; border: 2px solid #333; margin-bottom: 20px; }
+        
+        /* 아코디언 스타일 */
+        .accordion { background-color: #f1f1f1; color: #444; cursor: pointer; padding: 18px; width: 100%; border: none; text-align: left; outline: none; font-size: 16px; font-weight: bold; border-radius: 8px; margin-top: 30px; transition: 0.4s; }
+        .active, .accordion:hover { background-color: #ddd; }
+        .accordion:after { content: '\002B'; color: #777; font-weight: bold; float: right; margin-left: 5px; }
+        .active:after { content: "\2212"; }
+        .panel { padding: 0 18px; background-color: white; max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; border: 1px solid #ddd; border-top: none; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <h2>검사 결과</h2>
+
+        {% if result_status == 'duplicate' %}
+            <div style="padding: 20px; background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 5px;">
+                <h3>⚠️ 중복된 이미지</h3>
+                <p><strong>{{ message }}</strong></p> 
+                {% if uploaded_image %}
+                    <img src="{{ url_for('send_uploaded_file', filename=uploaded_image) }}" alt="업로드된 이미지" style="max-width: 100%; margin-top: 10px;">
+                {% endif %}
+            </div>
+            <hr>
+
+        {% elif result_status == 'invalid' %}
+            <div style="text-align: center; padding: 30px; border: 2px dashed red; border-radius: 10px; background-color: #fff0f0;">
+                <h2 style="color: red;">❌ 인식 실패</h2>
+                <h3 style="margin: 20px 0;">{{ message }}</h3>
+                {% if uploaded_image %}
+                    <img src="{{ url_for('static', filename='results/' + uploaded_image) }}" alt="분석 결과" class="analyzed-image" width="500">
+                {% endif %}
+            </div>
+            <hr>
+
+        {% else %}
+            <div>
+                <h3>AI 분석 이미지</h3>
+                <img src="{{ url_for('static', filename='results/' + uploaded_image) }}" alt="분석된 이미지" class="analyzed-image" width="600">
+            </div>
+
+            <h3>획득 포인트: <span style="color: blue; font-size: 1.2em;">+{{ score }} P</span></h3>
+            <p><strong>{{ message }}</strong></p>
+
+            {% if detect_status %}
+                <div style="margin-bottom: 30px;">
+                    <h4>탐지 상세 정보 (O: 발견됨 / X: 없음)</h4>
+                    <table class="info-table">
+                        <thead>
+                            <tr>
+                                <th>검사 항목</th>
+                                <th>탐지 여부</th>
+                                <th>비고</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>페트병 몸체</td>
+                                <td class="status-body-o">{{ detect_status['body'] }}</td>
+                                <td>기본 +10P</td>
+                            </tr>
+                            <tr>
+                                <td>뚜껑 (Cap)</td>
+                                <td class="{% if detect_status['cap'] == 'O' %}status-o{% else %}status-x{% endif %}">
+                                    {{ detect_status['cap'] }}
+                                </td>
+                                <td>발견 시 -2P</td>
+                            </tr>
+                            <tr>
+                                <td>라벨 (Label)</td>
+                                <td class="{% if detect_status['label'] == 'O' %}status-o{% else %}status-x{% endif %}">
+                                    {{ detect_status['label'] }}
+                                </td>
+                                <td>발견 시 -2P</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+            
+            {% if detected_items %}
+                <div style="background-color: #fff0f0; padding: 15px; border-radius: 5px; border: 1px solid #ffc9c9;">
+                    <p style="color: red; font-weight: bold; margin-top: 0;">감점 내역:</p>
+                    <ul style="margin-bottom: 0;">
+                        {% for item in detected_items %}
+                            <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <hr style="margin: 30px 0;">
+
+            <button class="accordion">올바른 페트병 분리수거 방법 다시 보기</button>
+            <div class="panel">
+                <div style="padding: 20px 0;">
+                    <h4>1단계: 내용물을 비우고 깨끗이 헹궈주세요.</h4>
+                    <div class="image-compare-container">
+                        <div style="text-align: center;">
+                            <span style="background-color: #ffcccc; color: #d63031; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em;">세척 전</span><br><br>
+                            <img src="{{ url_for('static', filename='step1.jpg') }}" alt="1단계 전" width="200">
+                        </div>
+                        <div style="text-align: center;">
+                            <span style="background-color: #dff9fb; color: #22a6b3; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 0.9em;">세척 후</span><br><br>
+                            <img src="{{ url_for('static', filename='step2.jpg') }}" alt="1단계 후" width="200">
+                        </div>
+                    </div>
+                    <p>용기 안의 음료를 완전히 비우고 헹궈주세요.</p>
+                    <h4>2단계: 뚜껑과 고리를 제거해주세요.</h4>
+                    <img src="{{ url_for('static', filename='step3.jpg') }}" alt="2단계" width="300">
+                    <h4>3단계: 라벨을 떼어내 주세요.</h4>
+                    <img src="{{ url_for('static', filename='step4.jpg') }}" alt="3단계" width="300">
+                    <h4>4단계: 압축하여 배출합니다.</h4>
+                    <img src="{{ url_for('static', filename='step5.jpg') }}" alt="4단계" width="300">
+                </div>
+            </div>
+
+        {% endif %}
+        
+        <br><br>
+        <div style="text-align: center; margin-bottom: 50px;">
+            <a href="/" style="background-color: #34495e; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 1.1em;">메인으로 돌아가기</a>
+            <a href="/inspection" style="background-color: #007bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 1.1em; margin-left: 10px;">다시 검사하기</a>
+        </div>
+    </div>
+
+    <script>
+        var acc = document.getElementsByClassName("accordion");
+        for (var i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight) panel.style.maxHeight = null;
+                else panel.style.maxHeight = panel.scrollHeight + "px";
+            });
+        }
+    </script>
+</body>
+</html>
